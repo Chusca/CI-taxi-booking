@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Validate') {
             steps {
-                echo 'Validate'
+                sh 'mvn validate > reports/validate.txt'
             }
         }
         stage('Compile') {
