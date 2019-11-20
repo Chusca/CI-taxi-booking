@@ -59,7 +59,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        timeout(time: 2, unit: 'MINUTE') {
+                        timeout(time: 2, unit: 'MINUTES') {
                             sh "curl -o benchmark.sh -s ${params.BENCHMARK_SCRIPT}"
                             sh 'bash benchmark.sh 3'
                         }
