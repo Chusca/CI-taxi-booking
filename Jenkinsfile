@@ -42,7 +42,7 @@ pipeline {
         }
         stage('Verify') {
             steps {
-                echo 'Verify'
+                sh 'mvn verify > reports/verify.txt'
             }
         }
         stage('Deploy') {
