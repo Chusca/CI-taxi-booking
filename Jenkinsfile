@@ -90,7 +90,7 @@ pipeline {
             archiveArtifacts artifacts: 'reports.tar.gz', fingerprint: true
         }
         success {
-            echo 'success'
+            archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
         }
         cleanup{
             cleanWs()
