@@ -10,6 +10,8 @@ pipeline {
                defaultValue:'https://github.com/sebascm/taxi-booking.git')
         string(name:'APP_GIT_BRANCH',
                defaultValue: "master")
+        string(name:'BENCHMARK_SCRIPT',
+               defaultValue: 'https://gist.githubusercontent.com/Chusca/9a75b4c3926768588fcfbb60f5753463/raw/benchmark.sh')
     } 
     
     stages {
@@ -17,6 +19,9 @@ pipeline {
             steps {
                 git branch: "${params.APP_GIT_BRANCH}", url: "${env.GIT_REPO_APP}"
                 sh 'mkdir reports'
+                sh 'apt update'
+                sh 'apt install bc'
+                sh 'apt clean'
             }
         }
         stage('Validate') {
@@ -52,7 +57,19 @@ pipeline {
         }
         stage('Benchmark') {
             steps {
-                echo 'Benchmark'
+                script {
+                    try {
+                        timeout(time: 2, unit: 'MINUTE') {
+                            sh "curl -o benchmark.sh -s ${params.BENCHMARK_SCRIPT}"
+                            sh 'bash benchmark.sh 3'
+                        }
+                    } catch (err) {
+                        // This try catch prevents Jenkins from setting currentBuild to
+                        // ABORTED in case of benchmark failure
+                        writeFile(file: "reports/benchmark_report.txt",
+                                text: "Benchmarks too slow", encoding: "UTF-8")
+                    }
+                }
             }
         }
     }
