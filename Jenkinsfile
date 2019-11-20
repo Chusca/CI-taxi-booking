@@ -54,7 +54,9 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                echo 'Deploy'
+                sh 'mvn deploy'
+                sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
+                archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
             }
         }
         stage('Benchmark') {
