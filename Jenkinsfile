@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Compile') {
             steps {
-                echo 'mvn compile > reports/compile.txt'
+                sh 'mvn compile > reports/compile.txt'
             }
         }
         stage('Tests') {
