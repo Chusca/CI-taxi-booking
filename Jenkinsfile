@@ -53,13 +53,14 @@ pipeline {
             }
         }
         stage('Deploy') {
-            when{
-                branch 'master'
-            }
             steps {
-                sh 'mvn deploy'
-                sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
-                archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+                script {
+                    if (${params.APP_GIT_BRANCH} == 'master'){
+                        sh 'mvn deploy'
+                        sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
+                        archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+                    }
+                }
             }
         }
         stage('Benchmark') {
@@ -94,7 +95,7 @@ pipeline {
         }
         success {
             script {
-                if (${env.BRANCH_NAME} == 'master')
+                if (${params.APP_GIT_BRANCH} == 'master')
                     archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
             }
         }
