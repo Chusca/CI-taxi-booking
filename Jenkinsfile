@@ -89,9 +89,6 @@ pipeline {
             )
             archiveArtifacts artifacts: 'reports.tar.gz', fingerprint: true
         }
-        failure {
-            echo 'failure'
-        }
         success {
             echo 'success'
         }
