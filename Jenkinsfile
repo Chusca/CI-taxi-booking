@@ -37,7 +37,7 @@ pipeline {
         }
         stage('Package') {
             steps {
-                echo 'Package'
+                sh 'mvn package > reports/package.txt'
             }
         }
         stage('Verify') {
