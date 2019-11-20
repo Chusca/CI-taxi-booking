@@ -53,6 +53,9 @@ pipeline {
             }
         }
         stage('Deploy') {
+              when{
+                branch 'master'
+            }
             steps {
                 sh 'mvn deploy'
                 sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
