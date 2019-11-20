@@ -53,7 +53,7 @@ pipeline {
             }
         }
         stage('Deploy') {
-              when{
+            when{
                 branch 'master'
             }
             steps {
@@ -93,7 +93,10 @@ pipeline {
             archiveArtifacts artifacts: 'reports.tar.gz', fingerprint: true
         }
         success {
-            archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+            script {
+                if (${env.BRANCH_NAME} == 'master')
+                    archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+            }
         }
         cleanup{
             cleanWs()
