@@ -31,7 +31,8 @@ pipeline {
         }
         stage('Tests') {
             steps {
-                echo 'Tests'
+                sh 'mvn test > reports/test.txt'
+                sh 'find . -type f -regex ".*/target/.*/TEST.*\\.xml" -exec cp {} reports \\;'
             }
         }
         stage('Package') {
