@@ -4,10 +4,19 @@ pipeline {
             image 'maven:3.6.0-jdk-8'
         }
     }
+
+    parameters{
+        string(name:'GIT_REPO_APP',
+               defaultValue:'https://github.com/sebascm/taxi-booking.git')
+        string(name:'APP_GIT_BRANCH',
+               defaultValue: "master")
+    } 
+    
     stages {
         stage('Setup') {
             steps {
-                echo 'Setup'
+                git branch: "${params.APP_GIT_BRANCH}", url: "${env.GIT_REPO_APP}"
+                sh 'mkdir reports'
             }
         }
         stage('Validate') {
