@@ -12,6 +12,8 @@ pipeline {
                defaultValue: "master")
         string(name:'BENCHMARK_SCRIPT',
                defaultValue: 'https://gist.githubusercontent.com/Chusca/9a75b4c3926768588fcfbb60f5753463/raw/benchmark.sh')
+        string(name:'REPORT_MAIL'.
+               defaultValue: 'jesus.maneiro.figueroa@gmail.com')
     } 
     
     stages {
@@ -75,7 +77,13 @@ pipeline {
     }
     post {
         always {
-            echo 'always'
+            emailext (attachmentsPattern: 'reports.tar.gz',
+                body: "Workflow result on ${currentBuild.currentResult}, check attached artifacts for further information",
+                subject: "Jenkins Build ${currentBuild.currentResult} on Job ${env.JOB_NAME}",
+                from: 'notificaciones.torusnewies@gmail.com',
+                replyTo: '',
+                to: "${params.REPORT_MAIL}"
+            )
         }
         failure {
             echo 'failure'
