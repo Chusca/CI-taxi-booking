@@ -28,35 +28,35 @@ pipeline {
         }
         stage('Validate') {
             steps {
-                sh 'mvn validate > reports/validate.txt'
+                sh 'mvn validate | tee reports/validate.txt'
             }
         }
         stage('Compile') {
             steps {
-                sh 'mvn compile > reports/compile.txt'
+                sh 'mvn compile | tee reports/compile.txt'
             }
         }
         stage('Tests') {
             steps {
-                sh 'mvn test > reports/test.txt'
+                sh 'mvn test | tee reports/test.txt'
                 sh 'find . -type f -regex ".*/target/.*/TEST.*\\.xml" -exec cp {} reports \\;'
             }
         }
         stage('Package') {
             steps {
-                sh 'mvn package > reports/package.txt'
+                sh 'mvn package | tee reports/package.txt'
             }
         }
         stage('Verify') {
             steps {
-                sh 'mvn verify > reports/verify.txt'
+                sh 'mvn verify | tee reports/verify.txt'
             }
         }
         stage('Deploy') {
             steps {
                 script {
                     if ("${params.APP_GIT_BRANCH}" == 'master'){
-                        sh 'mvn deploy'
+                        sh 'mvn deploy | tee reports/deploy.txt'
                         sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
                         archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
                     }
