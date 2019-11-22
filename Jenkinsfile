@@ -55,7 +55,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    if (${params.APP_GIT_BRANCH} == 'master'){
+                    if ("${params.APP_GIT_BRANCH}" == 'master'){
                         sh 'mvn deploy'
                         sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
                         archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
@@ -95,7 +95,7 @@ pipeline {
         }
         success {
             script {
-                if (${params.APP_GIT_BRANCH} == 'master')
+                if ("${params.APP_GIT_BRANCH}" == 'master'){
                     archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
             }
         }
