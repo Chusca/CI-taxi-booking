@@ -97,6 +97,7 @@ pipeline {
             script {
                 if ("${params.APP_GIT_BRANCH}" == 'master'){
                     archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+                }
             }
         }
         cleanup{
