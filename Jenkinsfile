@@ -42,18 +42,22 @@ pipeline {
                 sh 'find . -type f -regex ".*/target/.*/TEST.*\\.xml" -exec cp {} reports \\;'
             }
         }
-        if (("${params.APP_GIT_BRANCH}" == 'dev')||("${params.APP_GIT_BRANCH}" == 'master')){
-            stage ("Launch dev pipeline"){
-                steps {
-                    build job: 'Jenkinsfile_development',
-                        propagate: false,
-                        wait: false,
-                        parameters: [[$class: 'StringParameterValue',
-                                    name: 'APP_GIT_BRANCH',
-                                    value: "${APP_GIT_BRANCH}"],
-                                    [$class: 'StringParameterValue',
-                                    name: 'BENCHMARK_SCRIPT',
-                                    value: "${BENCHMARK_SCRIPT}"]]
+        stage ("Launch dev pipeline"){
+            steps {
+                script{
+                    if (("${params.APP_GIT_BRANCH}" == 'dev')||("${params.APP_GIT_BRANCH}" == 'master')){
+                        build job: 'Jenkinsfile_development',
+                            propagate: false,
+                            wait: false,
+                            parameters: [[$class: 'StringParameterValue',
+                                        name: 'APP_GIT_BRANCH',
+                                        value: "${APP_GIT_BRANCH}"],
+                                        [$class: 'StringParameterValue',
+                                        name: 'BENCHMARK_SCRIPT',
+                                        value: "${BENCHMARK_SCRIPT}"]]
+                    }else{
+                        echo "Dev pipeline skipped"
+                    }
                 }
             }
         }
