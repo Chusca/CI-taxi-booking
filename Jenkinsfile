@@ -46,7 +46,7 @@ pipeline {
             steps {
                 script{
                     if (("${params.APP_GIT_BRANCH}" == 'dev')||("${params.APP_GIT_BRANCH}" == 'master')){
-                        build job: 'Jenkinsfile_development',
+                        build job: 'taxi-booking_dev',
                             propagate: false,
                             wait: false,
                             parameters: [[$class: 'StringParameterValue',
