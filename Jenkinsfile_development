@@ -1,0 +1,68 @@
+pipeline {
+    agent {
+        docker {
+            image 'maven:3.6.0-jdk-8'
+        }
+    }
+
+    parameters{
+        string(name:'GIT_REPO_APP',
+               defaultValue:'https://github.com/sebascm/taxi-booking.git')
+        string(name:'APP_GIT_BRANCH',
+               defaultValue: "master")
+        string(name:'BENCHMARK_SCRIPT',
+               defaultValue: 'https://gist.githubusercontent.com/Chusca/9a75b4c3926768588fcfbb60f5753463/raw/benchmark.sh')
+        string(name:'REPORT_MAIL',
+               defaultValue: 'jesus.maneiro.figueroa@gmail.com')
+    } 
+    
+    stages {
+        stage('Package') {
+            steps {
+                sh 'mvn package | tee reports/package.txt'
+            }
+        }
+        stage('Verify') {
+            steps {
+                sh 'mvn verify | tee reports/verify.txt'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    if ("${params.APP_GIT_BRANCH}" == 'master'){
+                        sh 'mvn deploy | tee reports/deploy.txt'
+                        sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
+                        archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+                    }
+                }
+            }
+        }
+        stage('Benchmark') {
+            steps {
+                script {
+                    try {
+                        timeout(time: 2, unit: 'MINUTES') {
+                            sh "curl -o benchmark.sh -s ${params.BENCHMARK_SCRIPT}"
+                            sh 'bash benchmark.sh 3'
+                        }
+                    } catch (err) {
+                        // This try catch prevents Jenkins from setting currentBuild to
+                        // ABORTED in case of benchmark failure
+                        writeFile(file: "reports/benchmark_report.txt",
+                                text: "Benchmarks too slow", encoding: "UTF-8")
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            script {
+                if ("${params.APP_GIT_BRANCH}" == 'master'){
+                    archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+                }
+            }
+        }
+    }
+}

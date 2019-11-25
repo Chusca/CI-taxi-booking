@@ -42,41 +42,18 @@ pipeline {
                 sh 'find . -type f -regex ".*/target/.*/TEST.*\\.xml" -exec cp {} reports \\;'
             }
         }
-        stage('Package') {
-            steps {
-                sh 'mvn package | tee reports/package.txt'
-            }
-        }
-        stage('Verify') {
-            steps {
-                sh 'mvn verify | tee reports/verify.txt'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                script {
-                    if ("${params.APP_GIT_BRANCH}" == 'master'){
-                        sh 'mvn deploy | tee reports/deploy.txt'
-                        sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
-                        archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
-                    }
-                }
-            }
-        }
-        stage('Benchmark') {
-            steps {
-                script {
-                    try {
-                        timeout(time: 2, unit: 'MINUTES') {
-                            sh "curl -o benchmark.sh -s ${params.BENCHMARK_SCRIPT}"
-                            sh 'bash benchmark.sh 3'
-                        }
-                    } catch (err) {
-                        // This try catch prevents Jenkins from setting currentBuild to
-                        // ABORTED in case of benchmark failure
-                        writeFile(file: "reports/benchmark_report.txt",
-                                text: "Benchmarks too slow", encoding: "UTF-8")
-                    }
+        if (("${params.APP_GIT_BRANCH}" == 'dev')||("${params.APP_GIT_BRANCH}" == 'master')){
+            stage ("Lanzar pipeline_testing"){
+                steps {
+                    build job: 'pipeline_testing',
+                        propagate: false,
+                        wait: false,
+                        parameters: [[$class: 'StringParameterValue',
+                                    name: 'APP_ARTIFACT',
+                                    value: "${APP_ARTIFACT}"],
+                                    [$class: 'StringParameterValue',
+                                    name: 'ENV_ARTIFACT',
+                                    value: "${ENV_ARTIFACT}"]]
                 }
             }
         }
@@ -92,13 +69,6 @@ pipeline {
                 to: "${params.REPORT_MAIL}"
             )
             archiveArtifacts artifacts: 'reports.tar.gz', fingerprint: true
-        }
-        success {
-            script {
-                if ("${params.APP_GIT_BRANCH}" == 'master'){
-                    archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
-                }
-            }
         }
         cleanup{
             cleanWs()
