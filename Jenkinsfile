@@ -47,8 +47,8 @@ pipeline {
                 script{
                     if (("${params.APP_GIT_BRANCH}" == 'dev')||("${params.APP_GIT_BRANCH}" == 'master')){
                         build job: 'taxi-booking_dev',
-                            propagate: false,
-                            wait: false,
+                            propagate: true,
+                            wait: true,
                             parameters: [[$class: 'StringParameterValue',
                                         name: 'APP_GIT_BRANCH',
                                         value: "${APP_GIT_BRANCH}"],
