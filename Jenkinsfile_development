@@ -13,6 +13,15 @@ pipeline {
     } 
     
     stages {
+        stage('Setup') {
+            steps {
+                git branch: "${params.APP_GIT_BRANCH}", url: "${env.GIT_REPO_APP}"
+                sh 'mkdir reports'
+                sh 'apt update'
+                sh 'apt install bc'
+                sh 'apt clean'
+            }
+        }
         stage('Package') {
             steps {
                 sh 'mvn package | tee reports/package.txt'
