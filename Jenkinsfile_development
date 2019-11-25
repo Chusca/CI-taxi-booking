@@ -6,14 +6,10 @@ pipeline {
     }
 
     parameters{
-        string(name:'GIT_REPO_APP',
-               defaultValue:'https://github.com/sebascm/taxi-booking.git')
         string(name:'APP_GIT_BRANCH',
                defaultValue: "master")
         string(name:'BENCHMARK_SCRIPT',
                defaultValue: 'https://gist.githubusercontent.com/Chusca/9a75b4c3926768588fcfbb60f5753463/raw/benchmark.sh')
-        string(name:'REPORT_MAIL',
-               defaultValue: 'jesus.maneiro.figueroa@gmail.com')
     } 
     
     stages {

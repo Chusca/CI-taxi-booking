@@ -43,17 +43,17 @@ pipeline {
             }
         }
         if (("${params.APP_GIT_BRANCH}" == 'dev')||("${params.APP_GIT_BRANCH}" == 'master')){
-            stage ("Lanzar pipeline_testing"){
+            stage ("Launch dev pipeline"){
                 steps {
-                    build job: 'pipeline_testing',
+                    build job: 'Jenkinsfile_development',
                         propagate: false,
                         wait: false,
                         parameters: [[$class: 'StringParameterValue',
-                                    name: 'APP_ARTIFACT',
-                                    value: "${APP_ARTIFACT}"],
+                                    name: 'APP_GIT_BRANCH',
+                                    value: "${APP_GIT_BRANCH}"],
                                     [$class: 'StringParameterValue',
-                                    name: 'ENV_ARTIFACT',
-                                    value: "${ENV_ARTIFACT}"]]
+                                    name: 'BENCHMARK_SCRIPT',
+                                    value: "${BENCHMARK_SCRIPT}"]]
                 }
             }
         }
