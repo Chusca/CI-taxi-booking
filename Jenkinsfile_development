@@ -75,6 +75,10 @@ pipeline {
         }
     }
     post {
+        always {
+            sh 'tar -cvzf reports.tar.gz reports'
+            archiveArtifacts artifacts: 'reports.tar.gz', fingerprint: true
+        }
         success {
             script {
                 if ("${params.APP_GIT_BRANCH}" == 'master'){
