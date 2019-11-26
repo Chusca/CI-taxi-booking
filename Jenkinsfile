@@ -19,26 +19,31 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                git branch: "${params.APP_GIT_BRANCH}", url: "${env.GIT_REPO_APP}"
+                dir('project'){
+                    git branch: "${params.APP_GIT_BRANCH}", url: "${env.GIT_REPO_APP}"
+                }
                 sh 'mkdir reports'
-                sh 'apt update'
-                sh 'apt install bc'
-                sh 'apt clean'
             }
         }
         stage('Validate') {
             steps {
-                sh 'mvn validate | tee reports/validate.txt'
+                dir('project'){
+                    sh 'mvn validate | tee ../reports/validate.txt'
+                }
             }
         }
         stage('Compile') {
             steps {
-                sh 'mvn compile | tee reports/compile.txt'
+                dir('project'){
+                    sh 'mvn compile | tee ../reports/compile.txt'
+                }
             }
         }
         stage('Tests') {
             steps {
-                sh 'mvn test | tee reports/test.txt'
+                dir('project'){
+                    sh 'mvn test | tee ../reports/test.txt'
+                }
                 sh 'find . -type f -regex ".*/target/.*/TEST.*\\.xml" -exec cp {} reports \\;'
             }
         }
@@ -46,6 +51,9 @@ pipeline {
             steps {
                 script{
                     if (("${params.APP_GIT_BRANCH}" == 'dev')||("${params.APP_GIT_BRANCH}" == 'master')){
+                        sh 'tar -cvzf project.tar.gz project'
+                        archiveArtifacts artifacts: 'project.tar.gz', fingerprint: true
+
                         build job: 'taxi-booking_dev',
                             propagate: true,
                             wait: true,
@@ -54,7 +62,10 @@ pipeline {
                                         value: "${APP_GIT_BRANCH}"],
                                         [$class: 'StringParameterValue',
                                         name: 'BENCHMARK_SCRIPT',
-                                        value: "${BENCHMARK_SCRIPT}"]]
+                                        value: "${BENCHMARK_SCRIPT}"],
+                                        [$class: 'StringParameterValue',
+                                        name: 'PROJECT_NAME',
+                                        value: env.JOB_BASE_NAME]]
                     }else{
                         echo "Dev pipeline skipped"
                     }

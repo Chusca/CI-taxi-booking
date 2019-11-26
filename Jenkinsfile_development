@@ -10,12 +10,20 @@ pipeline {
                defaultValue: "master")
         string(name:'BENCHMARK_SCRIPT',
                defaultValue: 'https://gist.githubusercontent.com/Chusca/9a75b4c3926768588fcfbb60f5753463/raw/benchmark.sh')
+        string(name: 'PROJECT_NAME',
+               defaultValue: "taxi-booking")
     } 
     
     stages {
         stage('Setup') {
             steps {
-                git branch: "${params.APP_GIT_BRANCH}", url: "${env.GIT_REPO_APP}"
+                step([ $class: 'CopyArtifact',
+                    filter: 'project.tar.gz',
+                    projectName: "${params.PROJECT_NAME}",
+                    fingerprintArtifacts: true,
+                    selector: upstream(fallbackToLastSuccessful: true) 
+                ])
+                sh 'tar -xvzf project.tar.gz'
                 sh 'mkdir reports'
                 sh 'apt update'
                 sh 'apt install bc'
@@ -24,21 +32,27 @@ pipeline {
         }
         stage('Package') {
             steps {
-                sh 'mvn package | tee reports/package.txt'
+                dir('project'){
+                    sh 'mvn package | tee ../reports/package.txt'
+                }
             }
         }
         stage('Verify') {
             steps {
-                sh 'mvn verify | tee reports/verify.txt'
+                dir('project'){
+                    sh 'mvn verify | tee ../reports/verify.txt'
+                }
             }
         }
         stage('Deploy') {
             steps {
                 script {
                     if ("${params.APP_GIT_BRANCH}" == 'master'){
-                        sh 'mvn deploy | tee reports/deploy.txt'
-                        sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
-                        archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+                        dir('project'){
+                            sh 'mvn deploy | tee ../reports/deploy.txt'
+                            sh 'tar -cvzf deploy-artifact.tar.gz deploy/'
+                            archiveArtifacts artifacts: 'deploy-artifact.tar.gz', fingerprint: true
+                        }
                     }
                 }
             }
@@ -48,8 +62,10 @@ pipeline {
                 script {
                     try {
                         timeout(time: 2, unit: 'MINUTES') {
-                            sh "curl -o benchmark.sh -s ${params.BENCHMARK_SCRIPT}"
-                            sh 'bash benchmark.sh 3'
+                            dir('project'){
+                                sh "curl -o benchmark.sh -s ${params.BENCHMARK_SCRIPT}"
+                                sh 'bash benchmark.sh 3'
+                            }
                         }
                     } catch (err) {
                         // This try catch prevents Jenkins from setting currentBuild to
